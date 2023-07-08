@@ -1,9 +1,5 @@
-import json
-import time
-
 from kafka import KafkaConsumer
 import boto3
-from utils.generate_customer_data import generate_customer_data
 import os
 from datetime import datetime, timedelta
 access_key_id = os.environ['ACCESS_KEY_ID']
