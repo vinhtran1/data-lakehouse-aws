@@ -7,7 +7,6 @@ import uuid
 import datetime
 from itertools import groupby
 import os
-from pathlib import Path
 
 def get_random_string(length):
     letters = string.ascii_lowercase
@@ -119,13 +118,14 @@ def delete_customer(customers):
 def generate_list_random_customer_data(num_records=1):
     lst_records = []
     for i in range(1, num_records+1):
-        data = insert_new_customer()
-        lst_records.append(data)
         if i % 10 == 0 and i % 100 != 0:
             data = update_customer(lst_records)
             lst_records.append(data)
         elif i % 100 == 0:
             data = delete_customer(lst_records)
+            lst_records.append(data)
+        else:
+            data = insert_new_customer()
             lst_records.append(data)
     return lst_records
 
@@ -167,12 +167,39 @@ def export_to_jsons(dict_records):
 def generate_stream_customer_data(num_records=1):
     lst_data = generate_list_random_customer_data(num_records)
     lst_data_sorted = sort_by_date(lst_data)
-    for data in lst_data_sorted:
-        yield data
+    return lst_data_sorted
 
 
 def generate_batch_customer_data(num_records=1):
     lst_data = generate_list_random_customer_data(num_records)
     grouped_data = group_by_date(lst_data)
-    for data in grouped_data:
-        yield data
+    return grouped_data
+
+
+def genrate_transaction_data(customer_ids, num_transaction=1, company_name= 'companyA'):
+    lst_transactions = []
+    startdate=datetime.datetime(2020,1,1)
+    for _ in range(num_transaction):
+        customer_id = random.choice(customer_ids)
+        order_id = str(uuid.uuid4())
+        if company_name == 'companyA':
+            order_value = random.randint(10**5, 5*10**7) # 100K to 50M
+        elif company_name == 'companyB':
+            order_value = random.randint(10**9, 10**10) # 1 billion to 10 billion
+        order_date=startdate+datetime.timedelta(random.randint(1,10)) + datetime.timedelta(seconds=random.randint(1,86399))
+        order_date_str = order_date.isoformat()
+        currency = random.choice(['USD', 'VND'])
+        if currency == 'USD':
+            order_value = order_value/23500.0
+        transaction_tmp = {
+            "customer_id": customer_id,
+            "order_date":order_date_str,
+            "order_value": order_value,
+            "order_id": order_id,
+            "currency": currency
+        }
+        lst_transactions.append(transaction_tmp)
+    return lst_transactions
+
+
+    
